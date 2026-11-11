@@ -1,0 +1,27 @@
+# Signiert freigegebene Nocturne-Update-Listen mit dem Studio-Schlüssel (GitHub-Secret NOCTURNE_SCHLUESSEL).
+# Startet, sobald eine Freigabe-Datei in freigabe/ ankommt (oder von Hand unter „Actions“).
+name: Updates signieren
+on:
+  push:
+    branches: [main]
+    paths: ['freigabe/*.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: signieren
+  cancel-in-progress: false
+jobs:
+  signieren:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Freigegebene Update-Listen prüfen und signieren
+        env:
+          NOCTURNE_SCHLUESSEL: ${{ secrets.NOCTURNE_SCHLUESSEL }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: node werkzeug/signieren.mjs
